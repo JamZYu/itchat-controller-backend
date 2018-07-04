@@ -1,0 +1,5 @@
+db.sqlite3
+itchat.pkl
+venv/
+.idea
+config.py
