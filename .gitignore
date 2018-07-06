@@ -1,5 +1,6 @@
 db.sqlite3
 itchat.pkl
-venv/
+env/
 .idea
 config.py
+__pycache__/

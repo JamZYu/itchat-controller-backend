@@ -52,8 +52,14 @@ def pause():
     working = False
     return "paused!"
 
+@app.route("/")
+def default():
+    global working
+    working = False
+    return "Hello!"
+
 
 if __name__ == '__main__':
-    app.run(port=int("80"), debug=True)
+    app.run(debug=True, host='0.0.0.0', port=8080)
 
 
