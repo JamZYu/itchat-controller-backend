@@ -24,8 +24,6 @@ def text_reply(msg):
     if working:
         print(msg)
         response = learner.get_response(msg.text)
-        author = itchat.search_friends(nickName=config.ITCHAT_CONFIG['host_user_name'])[0]
-        print(author)
         user_name = author['UserName']
         itchat.send_msg(str(response), msg.FromUserName)
 
