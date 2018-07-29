@@ -5,10 +5,13 @@ from chatterbot.trainers import ChatterBotCorpusTrainer
 from flask import Flask, make_response, redirect, url_for
 import threading
 import config
+from time import sleep
+from itchat.content import *
 
 app = Flask(__name__)
 learner = ChatBot("this")
 working = True
+autoAddFriend = False
 qrSource = ''
 
 
@@ -16,7 +19,7 @@ def learn():
     learner.set_trainer(ChatterBotCorpusTrainer)
 
 
-@itchat.msg_register(itchat.content.TEXT)
+@itchat.msg_register(TEXT)
 def text_reply(msg):
     if working:
         print(msg)
@@ -27,9 +30,13 @@ def text_reply(msg):
         itchat.send_msg(str(response), msg.FromUserName)
 
 
+@itchat.msg_register(FRIENDS)
+
+
+
 def qr_callback(uuid, status, qrcode):
+    global qrSource
     if status == '0':
-        global qrSource
         qrSource = qrcode
     elif status == '200':
         qrSource = 'Logged in!'
@@ -51,8 +58,13 @@ def start():
     start_itchat_t = threading.Thread(target=start_itchat)
     start_itchat_t.daemon = True
     start_itchat_t.start()
-    working = True
-    return redirect(url_for('code'))
+    global qrSource
+    while True:
+        sleep(0.5)
+        if not len(qrSource) < 100:
+            response = make_response(qrSource)
+            response.headers['Content-Type'] = 'image/jpeg'
+            return response
 
 
 @app.route("/resume")
