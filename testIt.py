@@ -38,7 +38,7 @@ def qr_callback(uuid, status, qrcode):
 
 
 def start_itchat():
-    itchat.auto_login(hotReload=True, qrCallback=qr_callback)
+    itchat.auto_login(qrCallback=qr_callback)
     itchat.run()
 
 
