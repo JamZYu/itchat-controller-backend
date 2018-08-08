@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 import itchat
+import requests
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
 from flask import Flask, make_response, redirect, url_for
@@ -13,23 +14,69 @@ learner = ChatBot("this")
 working = True
 autoAddFriend = False
 qrSource = ''
+key = config.ITCHAT_CONFIG['key']
+url_turin = 'http://www.tuling123.com/openapi/api'
+url_aego = 'http://10.200.55.106:3000/api/messages'
+userNameList = []
 
 
 def learn():
     learner.set_trainer(ChatterBotCorpusTrainer)
 
 
+def get_chatterbot_text_response(msg):
+    response = learner.get_response(msg.text)
+    return response
+
+
+def get_turin_text_response(msg, userid):
+    global key
+    global url_turin
+    data = {
+        'key': key,
+        'info': msg,
+        'userid': userid,
+    }
+    response = requests.post(url_turin, data=data).json()
+    return response.get('text')
+
+
+def get_aego_response(msg, userid):
+    data={
+        'message': msg,
+        'userid': userid
+    }
+    response = requests.post(url_aego, data=data).json()
+    return response.get('reply')
+
+
 @itchat.msg_register(TEXT)
 def text_reply(msg):
+    global working
+    global userNameList
     if working:
-        print(msg)
-        response = learner.get_response(msg.text)
-        user_name = author['UserName']
-        itchat.send_msg(str(response), msg.FromUserName)
+        if msg.FromUserName in userNameList:
+            # response = get_chatterbot_text_response(msg.text)
+            if msg.text == 'end':
+                userNameList.remove(msg.FromUserName)
+                itchat.send_msg("Bot stopped!", msg.FromUserName)
+            else:
+                response = get_turin_text_response(msg.text, msg.FromUserName)
+                author = itchat.search_friends(nickName=config.ITCHAT_CONFIG['host_user_name'])[0]
+            print(author)
+            user_name = author['UserName']
+            itchat.send_msg(str(response), msg.FromUserName)
+        elif msg.text == 'start':
+            userNameList.append(msg.FromUserName)
+            itchat.send_msg("Bot started for you!", msg.FromUserName)
 
 
 @itchat.msg_register(FRIENDS)
-
+def add(msg):
+    if autoAddFriend:
+        print("Auto Adding")
+        itchat.add_friend(**msg['Text'])
+        itchat.send_msg("Welcome to wechat bot")
 
 
 def qr_callback(uuid, status, qrcode):
@@ -56,6 +103,7 @@ def start():
     start_itchat_t = threading.Thread(target=start_itchat)
     start_itchat_t.daemon = True
     start_itchat_t.start()
+    working = True
     global qrSource
     while True:
         sleep(0.5)
@@ -77,6 +125,13 @@ def pause():
     global working
     working = False
     return "paused!"
+
+
+@app.route("/autoadd")
+def auto_add():
+    global autoAddFriend
+    autoAddFriend = True
+    return "Start auto adding!"
 
 
 @app.route("/")
