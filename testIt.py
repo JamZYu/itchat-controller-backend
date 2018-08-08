@@ -55,6 +55,7 @@ def text_reply(msg):
     global working
     global userNameList
     if working:
+        print(msg.FromUserName)
         if msg.FromUserName in userNameList:
             # response = get_chatterbot_text_response(msg.text)
             if msg.text == 'end':
@@ -111,6 +112,31 @@ def start():
             response = make_response(qrSource)
             response.headers['Content-Type'] = 'image/jpeg'
             return response
+
+
+@app.route("/nickname/<nickname>")
+def add_nickname_to_list(nickname):
+    global userNameList
+    author = itchat.search_friends(nickName=nickname)[0]
+    user_name = author['UserName']
+    userNameList.append(user_name)
+    return nickname + "added"
+
+
+@app.route("/username/<username>")
+def add_username_to_list(username):
+    global userNameList
+    userNameList.append(username)
+    return username + "added"
+
+
+@app.route("/send/<nickname>/<message>/<time>")
+def sendto(nickname, message, time):
+    author = itchat.search_friends(nickName=nickname)[0]
+    user_name = author['UserName']
+    for i in range(int(time)):
+        itchat.send_msg(str(message), user_name)
+    return user_name + "added"
 
 
 @app.route("/resume")
