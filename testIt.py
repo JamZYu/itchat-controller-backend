@@ -139,6 +139,15 @@ def sendto(nickname, message, time):
     return user_name + "added"
 
 
+@app.route("/sendgp/<nickname>/<message>/<time>")
+def send_to_group(nickname, message, time):
+    author = itchat.search_chatrooms(nickname)[0]
+    user_name = author['UserName']
+    for i in range(int(time)):
+        itchat.send_msg(str(message), user_name)
+    return user_name + "added"
+
+
 @app.route("/resume")
 def resume():
     global working
