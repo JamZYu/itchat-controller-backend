@@ -13,6 +13,7 @@ app = Flask(__name__)
 learner = ChatBot("this")
 working = True
 autoAddFriend = False
+auto_reply_dict = {}
 qrSource = ''
 key = config.ITCHAT_CONFIG['key']
 url_turin = 'http://www.tuling123.com/openapi/api'
@@ -55,6 +56,8 @@ def text_reply(msg):
     global working
     global userNameList
     if working:
+        if msg.FromUserName in auto_reply_dict.keys():
+            itchat.send_msg(auto_reply_dict[msg.FromUserName], msg.FromUserName)
         print(msg.FromUserName)
         if msg.FromUserName in userNameList:
             # response = get_chatterbot_text_response(msg.text)
@@ -146,6 +149,14 @@ def send_to_group(nickname, message, time):
     for i in range(int(time)):
         itchat.send_msg(str(message), user_name)
     return user_name + "added"
+
+
+@app.route("/sendautoreply/<nickname>/<message>")
+def send_auto_reply(nickname, message):
+    author = itchat.search_friends(nickname)[0]
+    user_name = author['UserName']
+    auto_reply_dict[user_name] = message
+    return user_name + " done for " + message
 
 
 @app.route("/resume")
