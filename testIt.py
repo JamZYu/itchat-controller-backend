@@ -57,7 +57,8 @@ def text_reply(msg):
     global userNameList
     if working:
         if msg.FromUserName in auto_reply_dict.keys():
-            itchat.send_msg(auto_reply_dict[msg.FromUserName], msg.FromUserName)
+            if '。' in msg.text:
+                itchat.send_msg(auto_reply_dict[msg.FromUserName], msg.FromUserName)
         print(msg.FromUserName)
         if msg.FromUserName in userNameList:
             # response = get_chatterbot_text_response(msg.text)
