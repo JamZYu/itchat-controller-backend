@@ -4,3 +4,4 @@ env/
 .idea
 config.py
 __pycache__/
+nohup.out
